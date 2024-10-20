@@ -3,12 +3,17 @@ services:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
-    configs:
-      - source: prometheus_config
-        target: /etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=15d'
+    environment:
+      - PROMETHEUS_USER_FILE=/run/secrets/PROMETHEUS_USER
+      - PROMETHEUS_PASSWORD_FILE=/run/secrets/PROMETHEUS_PASSWORD
+      - PROMETHEUS_API_HEALTH_CHECK_URL_FILE=/run/secrets/PROMETHEUS_API_HEALTH_CHECK_URL
+    secrets:
+      - PROMETHEUS_USER
+      - PROMETHEUS_PASSWORD
+      - PROMETHEUS_API_HEALTH_CHECK_URL
+    volumes:
+      - ./prometheus.yml.template:/etc/prometheus/prometheus.yml.template
+    entrypoint: /bin/sh -c "stacks/esm2/logging/prometheus/entrypoint.sh"
     networks:
       - monitoring_network
     labels:
@@ -118,8 +123,12 @@ services:
       - GF_SERVER_PROTOCOL=https
       - GF_SERVER_CERT_FILE=/etc/ssl/certs/server.crt
       - GF_SERVER_CERT_KEY=/etc/ssl/private/server.key
+      - PROMETHEUS_URL_FILE=/run/secrets/PROMETHEUS_URL
+      - LOKI_URL_FILE=/run/secrets/LOKI_URL
     secrets:
       - grafana_admin_password
+      - PROMETHEUS_URL
+      - LOKI_URL
     networks:
       - monitoring_network
     labels:
@@ -310,4 +319,14 @@ configs:
 
 secrets:
   grafana_admin_password:
+    external: true
+  PROMETHEUS_URL:
+    external: true
+  LOKI_URL:
+    external: true
+  PROMETHEUS_USER:
+    external: true
+  PROMETHEUS_PASSWORD:
+    external: true
+  PROMETHEUS_API_HEALTH_CHECK_URL:
     external: true
