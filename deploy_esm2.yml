@@ -1,11 +1,18 @@
-  ---
-    - hosts: swarm_manager
+---
+- hosts: swarm_manager
   become: yes
+  vars:
+    ansible_python_interpreter: /opt/myenv/bin/python3
+    docker_host: "unix:///var/run/docker.sock"
 
   vars_files:
     - env.yml
 
   tasks:
+    - name: Install Docker Collection (community.docker)
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install community.docker --force
+
     - name: Update APT package index
       ansible.builtin.apt:
         update_cache: yes
@@ -57,6 +64,31 @@
         state: started
         enabled: yes
 
+    - name: Create Docker network if not exists
+      community.docker.docker_network:
+        name: sm_network
+        state: present
+        driver: overlay
+        scope: swarm
+
+    - name: Ensure Python venv package is installed
+      ansible.builtin.apt:
+        name: python3-venv
+        state: present
+
+    - name: Create a virtual environment
+      ansible.builtin.command:
+        cmd: python3 -m venv /opt/myenv
+        creates: /opt/myenv/bin/activate
+
+    - name: Install jsondiff and requests in the virtual environment
+      ansible.builtin.command:
+        cmd: /opt/myenv/bin/pip install jsondiff requests docker
+
+    - name: Set environment variable for Docker Host
+      ansible.builtin.set_fact:
+        DOCKER_HOST: "{{ docker_host }}"
+
     - name: Log in to Azure Container Registry
       community.docker.docker_login:
         registry_url: "{{ DOCKER_REGISTRY_URL }}"
@@ -77,6 +109,14 @@
         state: present
         compose:
           - stacks/esm2/backend/docker-swarm.yaml
+        environment:
+          ENABLE_SSL: "{{ ENABLE_SSL }}"
+          KEY_STORE_LOCATION: "{{ KEY_STORE_LOCATION }}"
+          KEY_STORE_PASSWORD: "{{ KEY_STORE_PASSWORD }}"
+          UPLOAD_BASEPATH: "{{ UPLOAD_BASEPATH }}"
+          UPLOAD_BASEURI: "{{ UPLOAD_BASEURI }}"
+          FHIR_AUTH_URL: "{{ FHIR_AUTH_URL }}"
+          FHIR_URL: "{{ FHIR_URL }}"
 
     - name: Deploy the frontend stack (esm2)
       community.docker.docker_stack:
