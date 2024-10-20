@@ -13,6 +13,16 @@
       ansible.builtin.command:
         cmd: ansible-galaxy collection install community.docker --force
 
+    - name: Generate backend Docker Swarm file (esm2)
+      template:
+        src: stacks/esm2/backend/docker-swarm.yml.j2
+        dest: stacks/esm2/backend/docker-swarm.yml
+
+    - name: Generate frontend Docker Swarm file (esm2)
+      template:
+        src: stacks/esm2/frontend/docker-swarm.yml.j2
+        dest: stacks/esm2/frontend/docker-swarm.yml
+
     - name: Create certs directory
       ansible.builtin.file:
         path: ./stacks/esm2/backend/certs
@@ -125,16 +135,6 @@
 
     - name: Create Docker Secrets
       include_tasks: stacks/esm2/secrets/create_secrets.yml
-
-    - name: Generate backend Docker Swarm file (esm2)
-      template:
-        src: stacks/esm2/backend/docker-swarm.yml.j2
-        dest: stacks/esm2/backend/docker-swarm.yml
-
-    - name: Generate frontend Docker Swarm file (esm2)
-      template:
-        src: stacks/esm2/frontend/docker-swarm.yml.j2
-        dest: stacks/esm2/frontend/docker-swarm.yml
 
     - name: Deploy the backend stack (esm2)
       community.docker.docker_stack:
