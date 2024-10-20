@@ -1,9 +1,9 @@
----
-- hosts: swarm_manager
+  ---
+    - hosts: swarm_manager
   become: yes
 
   vars_files:
-    - .env
+    - env.yml
 
   tasks:
     - name: Update APT package index
@@ -13,26 +13,16 @@
     - name: Install dependencies for Docker
       ansible.builtin.apt:
         name:
-          - apt-transport-https
           - ca-certificates
           - curl
-          - software-properties-common
-        state: present
-
-    - name: Install jq
-      ansible.builtin.apt:
-        name: jq
+          - gnupg
+          - lsb-release
         state: present
 
     - name: Remove existing Docker sources (se existirem)
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
         state: absent
-
-    - name: Add Docker GPG key
-      ansible.builtin.apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
 
     - name: Create the /etc/apt/keyrings directory (if necessary)
       ansible.builtin.file:
@@ -46,9 +36,11 @@
         dest: /etc/apt/keyrings/docker.asc
         mode: '0644'
 
-    - name: Add Docker repository based on Ubuntu version
+    - name: Add Docker repository manually
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable"
+        filename: docker.list
+        update_cache: yes
         state: present
 
     - name: Install Docker
