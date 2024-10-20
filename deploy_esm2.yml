@@ -109,14 +109,10 @@
         state: present
         compose:
           - stacks/esm2/backend/docker-swarm.yaml
-        environment:
-          ENABLE_SSL: "{{ ENABLE_SSL }}"
-          KEY_STORE_LOCATION: "{{ KEY_STORE_LOCATION }}"
-          KEY_STORE_PASSWORD: "{{ KEY_STORE_PASSWORD }}"
-          UPLOAD_BASEPATH: "{{ UPLOAD_BASEPATH }}"
-          UPLOAD_BASEURI: "{{ UPLOAD_BASEURI }}"
-          FHIR_AUTH_URL: "{{ FHIR_AUTH_URL }}"
-          FHIR_URL: "{{ FHIR_URL }}"
+        vars:
+          DOCKER_REGISTRY_URL: "{{ DOCKER_REGISTRY_URL }}"
+          BACK_IMAGE_NAME: "{{ BACK_IMAGE_NAME }}"
+          TAG_NAME: "{{ TAG_NAME }}"
 
     - name: Deploy the frontend stack (esm2)
       community.docker.docker_stack:

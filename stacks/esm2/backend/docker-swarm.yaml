@@ -24,13 +24,13 @@ services:
   backend:
     image: '$DOCKER_REGISTRY_URL/${BACK_IMAGE_NAME}:${TAG_NAME}'
     environment:
-      ENABLE_SSL: ${ENABLE_SSL}
-      KEY_STORE_LOCATION: ${KEY_STORE_LOCATION}
-      KEY_STORE_PASSWORD: ${KEY_STORE_PASSWORD}
-      UPLOAD_BASEPATH: ${UPLOAD_BASEPATH}
-      UPLOAD_BASEURI: ${UPLOAD_BASEURI}
-      FHIR_AUTH_URL_FILE: ${FHIR_AUTH_URL}
-      FHIR_URL: ${FHIR_URL}
+      ENABLE_SSL_FILE: /run/secrets/ENABLE_SSL
+      KEY_STORE_LOCATION_FILE: /run/secrets/KEY_STORE_LOCATION
+      KEY_STORE_PASSWORD_FILE: /run/secrets/KEY_STORE_PASSWORD
+      UPLOAD_BASEPATH_FILE: /run/secrets/UPLOAD_BASEPATH
+      UPLOAD_BASEURI_FILE: /run/secrets/UPLOAD_BASEURI
+      FHIR_AUTH_URL_FILE: /run/secrets/FHIR_AUTH_URL
+      FHIR_URL_FILE: /run/secrets/FHIR_URL
       FHIR_INTEGRATION_USER_FILE: /run/secrets/FHIR_INTEGRATION_USER
       DB_USER_FILE: /run/secrets/DB_USER
       DB_PASSWORD_FILE: /run/secrets/DB_PASSWORD
@@ -43,6 +43,13 @@ services:
       - DB_USER
       - DB_PASSWORD
       - DB_ESM
+      - ENABLE_SSL
+      - KEY_STORE_PASSWORD
+      - KEY_STORE_LOCATION
+      - UPLOAD_BASEPATH
+      - UPLOAD_BASEURI
+      - FHIR_AUTH_URL
+      - FHIR_URL
     volumes:
       - ./certs:/app/keystore
       - ./storage:/app/storage
@@ -103,4 +110,18 @@ secrets:
   DB_USER:
     external: true
   DB_PASSWORD:
+    external: true
+  ENABLE_SSL:
+    external: true
+  KEY_STORE_PASSWORD:
+    external: true
+  KEY_STORE_LOCATION:
+    external: true
+  UPLOAD_BASEPATH:
+    external: true
+  UPLOAD_BASEURI:
+    external: true
+  FHIR_AUTH_URL:
+    external: true
+  FHIR_URL:
     external: true
