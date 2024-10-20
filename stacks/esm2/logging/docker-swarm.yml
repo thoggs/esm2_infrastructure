@@ -283,8 +283,7 @@ services:
 
 networks:
   monitoring:
-    driver: overlay
-    attachable: true
+    external: true
 
 volumes:
   prometheus-data:
