@@ -23,17 +23,48 @@
         src: stacks/esm2/frontend/docker-swarm.yml.j2
         dest: stacks/esm2/frontend/docker-swarm.yml
 
-    - name: Create certs directory
-      ansible.builtin.file:
-        path: ./stacks/esm2/backend/certs
-        state: directory
-        mode: '0755'
+    - name: Generate Prometheus configuration file
+      template:
+        src: stacks/esm2/logging/prometheus/prometheus.yml.j2
+        dest: stacks/esm2/logging/prometheus/prometheus.yml
 
-    - name: Create storage directory
-      ansible.builtin.file:
-        path: ./stacks/esm2/backend/storage
-        state: directory
-        mode: '0755'
+    - name: Generate Grafana datasources configuration file
+      template:
+        src: stacks/esm2/logging/grafana/datasources.yml.j2
+        dest: stacks/esm2/logging/grafana/datasources.yml
+
+    - name: Create backend data and storage volumes
+      tasks:
+        - name: Create certs directory
+          ansible.builtin.file:
+            path: ./stacks/esm2/backend/certs
+            state: directory
+            mode: '0755'
+
+        - name: Create storage directory
+          ansible.builtin.file:
+            path: ./stacks/esm2/backend/storage
+            state: directory
+            mode: '0755'
+
+    - name: Create Docker volumes for monitoring stack
+      tasks:
+        - name: Create Prometheus data volume
+          community.docker.docker_volume:
+            path: stacks/esm2/logging/prometheus
+            name: prometheus_data
+            state: present
+
+        - name: Create Grafana storage volume
+          community.docker.docker_volume:
+            path: stacks/esm2/logging/grafana
+            name: grafana_storage
+            state: present
+
+        - name: Create Portainer data volume
+          community.docker.docker_volume:
+            name: portainer_data
+            state: present
 
     - name: Update APT package index
       ansible.builtin.apt:
@@ -93,13 +124,13 @@
         driver: overlay
         scope: swarm
 
-#    - name: Create Docker network for monitoring_network (if not exists)
-#      community.docker.docker_network:
-#        name: monitoring_network
-#        driver: overlay
-#        state: present
-#        attachable: yes
-#        scope: swarm
+    #    - name: Create Docker network for monitoring_network (if not exists)
+    #      community.docker.docker_network:
+    #        name: monitoring_network
+    #        driver: overlay
+    #        state: present
+    #        attachable: yes
+    #        scope: swarm
 
     - name: Ensure Python venv package is installed
       ansible.builtin.apt:

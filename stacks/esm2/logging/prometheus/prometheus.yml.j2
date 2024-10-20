@@ -9,8 +9,8 @@ scrape_configs:
     static_configs:
       - targets: [ 'localhost:9090' ]
     basic_auth:
-      username: '${PROMETHEUS_USER}'
-      password: '${PROMETHEUS_PASSWORD}'
+      username: '{{ PROMETHEUS_USER }}'
+      password: '{{ PROMETHEUS_PASSWORD }}'
 
   - job_name: 'cadvisor'
     dns_sd_configs:
@@ -32,7 +32,7 @@ scrape_configs:
       module: [ http_2xx ]
     scrape_interval: 5s
     static_configs:
-      - targets: [ '${PROMETHEUS_API_HEALTH_CHECK_URL}' ]
+      - targets: [ '{{ PROMETHEUS_API_HEALTH_CHECK_URL }}' ]
     relabel_configs:
       - source_labels: [ _address_ ]
         target_label: __param_target

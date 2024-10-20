@@ -3,17 +3,12 @@ services:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
-    environment:
-      - PROMETHEUS_USER_FILE=/run/secrets/PROMETHEUS_USER
-      - PROMETHEUS_PASSWORD_FILE=/run/secrets/PROMETHEUS_PASSWORD
-      - PROMETHEUS_API_HEALTH_CHECK_URL_FILE=/run/secrets/PROMETHEUS_API_HEALTH_CHECK_URL
-    secrets:
-      - PROMETHEUS_USER
-      - PROMETHEUS_PASSWORD
-      - PROMETHEUS_API_HEALTH_CHECK_URL
-    volumes:
-      - ./prometheus.yml.template:/etc/prometheus/prometheus.yml.template
-    entrypoint: /bin/sh -c "stacks/esm2/logging/prometheus/entrypoint.sh"
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
     networks:
       - monitoring_network
     labels:
@@ -51,7 +46,7 @@ services:
       - source: loki_config
         target: /etc/loki/local-config.yml
     volumes:
-      - loki-data:/loki
+      - loki_data:/stacks/esm2/logging/loki
     command:
       - '-config.file=/etc/loki/local-config.yml'
     networks:
@@ -114,7 +109,7 @@ services:
       - source: grafana_datasources
         target: /etc/grafana/provisioning/datasources/datasources.yml
     volumes:
-      - grafana-storage:/var/lib/grafana
+      - grafana_storage:/var/lib/grafana
       - /home/ehsm2-vm-user/stackmonit/certgen/server.crt:/etc/ssl/certs/server.crt:ro
       - /home/ehsm2-vm-user/stackmonit/certgen/server.key:/etc/ssl/private/server.key:ro
     environment:
@@ -296,10 +291,10 @@ networks:
     attachable: true
 
 volumes:
-  prometheus-data:
-  grafana-storage:
+  prometheus_data:
+  grafana_storage:
   portainer_data:
-  loki-data:
+  loki_data:
 
 configs:
   prometheus_config:
