@@ -2,7 +2,7 @@
 - hosts: swarm_manager
   become: yes
   vars:
-    ansible_python_interpreter: /opt/myenv/bin/python3
+    ansible_python_interpreter: /opt/esm2_environ/bin/python3
     docker_host: "unix:///var/run/docker.sock"
 
   vars_files:
@@ -78,12 +78,12 @@
 
     - name: Create a virtual environment
       ansible.builtin.command:
-        cmd: python3 -m venv /opt/myenv
-        creates: /opt/myenv/bin/activate
+        cmd: python3 -m venv /opt/esm2_environ
+        creates: /opt/esm2_environ/bin/activate
 
     - name: Install jsondiff and requests in the virtual environment
       ansible.builtin.command:
-        cmd: /opt/myenv/bin/pip install jsondiff requests docker
+        cmd: /opt/esm2_environ/bin/pip install jsondiff requests docker
 
     - name: Set environment variable for Docker Host
       ansible.builtin.set_fact:
@@ -103,16 +103,17 @@
     - name: Create Docker Secrets
       include_tasks: stacks/esm2/secrets/create_secrets.yml
 
+    - name: Generate backend docker-swarm.yaml file (esm2)
+      template:
+        src: templates/docker-swarm.yml.j2
+        dest: stacks/esm2/backend/docker-swarm.yaml
+
     - name: Deploy the backend stack (esm2)
       community.docker.docker_stack:
         name: esm2
         state: present
         compose:
           - stacks/esm2/backend/docker-swarm.yaml
-        vars:
-          DOCKER_REGISTRY_URL: "{{ DOCKER_REGISTRY_URL }}"
-          BACK_IMAGE_NAME: "{{ BACK_IMAGE_NAME }}"
-          TAG_NAME: "{{ TAG_NAME }}"
 
     - name: Deploy the frontend stack (esm2)
       community.docker.docker_stack:
