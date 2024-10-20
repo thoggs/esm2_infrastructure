@@ -10,7 +10,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=15d'
     networks:
-      - logging_network
+      - monitoring_network
     labels:
       - "com.example.service=prometheus"
     healthcheck:
@@ -50,7 +50,7 @@ services:
     command:
       - '-config.file=/etc/loki/local-config.yml'
     networks:
-      - logging_network
+      - monitoring_network
     labels:
       - "com.example.service=loki"
     deploy:
@@ -81,7 +81,7 @@ services:
     command:
       - '-config.file=/etc/promtail/config.yml'
     networks:
-      - logging_network
+      - monitoring_network
     labels:
       - "com.example.service=promtail"
     deploy:
@@ -121,7 +121,7 @@ services:
     secrets:
       - grafana_admin_password
     networks:
-      - logging_network
+      - monitoring_network
     labels:
       - "com.example.service=grafana"
     deploy:
@@ -154,7 +154,7 @@ services:
       - "4317:4317"
       - "4318:4318"
     networks:
-      - logging_network
+      - monitoring_network
     labels:
       - "com.example.service=opentelemetry"
     deploy:
@@ -185,7 +185,7 @@ services:
       - /home/ehsm2-vm-user/stackmonit/cert/grafana.local.crt:/etc/ssl/certs/grafana.crt:ro
       - /home/ehsm2-vm-user/stackmonit/cert/grafana.local.key:/etc/ssl/private/grafana.key:ro
     networks:
-      - logging_network
+      - monitoring_network
     labels:
       - "com.example.service=portainer"
     deploy:
@@ -218,7 +218,7 @@ services:
     ports:
       - "9115:9115"
     networks:
-      - logging_network
+      - monitoring_network
     deploy:
       mode: replicated
       replicas: 1
@@ -258,7 +258,7 @@ services:
           cpus: '0.1'
           memory: 128M
     networks:
-      - logging_network
+      - monitoring_network
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.39.3
@@ -279,16 +279,12 @@ services:
           cpus: '0.1'
           memory: 128M
     networks:
-      - logging_network
-
-#networks:
-#  logging_network:
-#    driver: overlay
-#    attachable: true
+      - monitoring_network
 
 networks:
-  logging_network:
-      external: true
+  monitoring_network:
+    driver: overlay
+    attachable: true
 
 volumes:
   prometheus-data:
