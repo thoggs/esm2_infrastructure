@@ -88,6 +88,7 @@
         name: monitoring
         driver: overlay
         state: present
+        attachable: true
         scope: swarm
 
     - name: Ensure Python venv package is installed

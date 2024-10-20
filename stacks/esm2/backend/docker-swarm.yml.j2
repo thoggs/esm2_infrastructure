@@ -22,7 +22,7 @@ services:
       retries: 5
 
   backend:
-    image: "crehsm2dev001.azurecr.io/esm2_backend_dev:lastest"
+    image: "crehsm2dev001.azurecr.io/esm2_backend_dev:latest"
     environment:
       ENABLE_SSL_FILE: /run/secrets/ENABLE_SSL
       KEY_STORE_LOCATION_FILE: /run/secrets/KEY_STORE_LOCATION
