@@ -103,10 +103,15 @@
     - name: Create Docker Secrets
       include_tasks: stacks/esm2/secrets/create_secrets.yml
 
-    - name: Generate backend docker-swarm.yaml file (esm2)
+    - name: Generate backend docker-swarm.yml.j2 file (esm2)
       template:
-        src: templates/docker-swarm.yml.j2
-        dest: stacks/esm2/backend/docker-swarm.yaml
+        src: stacks/esm2/backend/docker-swarm.yml.j2
+        dest: stacks/esm2/backend/docker-swarm.yml
+
+    - name: Generate frontend docker-swarm.yml.j2 file (esm2)
+      template:
+        src: stacks/esm2/frontend/docker-swarm.yml.j2
+        dest: stacks/esm2/frontend/docker-swarm.yml
 
     - name: Deploy the backend stack (esm2)
       community.docker.docker_stack:
@@ -120,7 +125,7 @@
         name: esm2
         state: present
         compose:
-          - stacks/esm2/frontend/docker-swarm.yaml
+          - stacks/esm2/frontend/docker-swarm.yml
 
     - name: Deploy the logging stack (monitoring)
       community.docker.docker_stack:
