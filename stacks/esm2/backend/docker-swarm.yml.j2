@@ -22,7 +22,7 @@ services:
       retries: 5
 
   backend:
-    image: "{{ DOCKER_REGISTRY_URL }}/{{ BACK_IMAGE_NAME }}:{{ TAG_NAME }}"
+    image: "crehsm2dev001.azurecr.io/esm2_backend_dev:lastest"
     environment:
       ENABLE_SSL_FILE: /run/secrets/ENABLE_SSL
       KEY_STORE_LOCATION_FILE: /run/secrets/KEY_STORE_LOCATION

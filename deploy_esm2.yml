@@ -13,6 +13,18 @@
       ansible.builtin.command:
         cmd: ansible-galaxy collection install community.docker --force
 
+    - name: Create certs directory
+      ansible.builtin.file:
+        path: ./stacks/esm2/backend/certs
+        state: directory
+        mode: '0755'
+
+    - name: Create storage directory
+      ansible.builtin.file:
+        path: ./stacks/esm2/backend/storage
+        state: directory
+        mode: '0755'
+
     - name: Update APT package index
       ansible.builtin.apt:
         update_cache: yes
@@ -64,11 +76,18 @@
         state: started
         enabled: yes
 
-    - name: Create Docker network if not exists
+    - name: Create Docker network for sm_network (if not exists)
       community.docker.docker_network:
         name: sm_network
         state: present
         driver: overlay
+        scope: swarm
+
+    - name: Create Docker network for monitoring (if not exists)
+      community.docker.docker_network:
+        name: monitoring
+        driver: overlay
+        state: present
         scope: swarm
 
     - name: Ensure Python venv package is installed
@@ -95,6 +114,9 @@
         username: "{{ DOCKER_REGISTRY_USER }}"
         password: "{{ DOCKER_REGISTRY_PASSWORD }}"
 
+    - name: Verify Docker login
+      command: docker info
+
     - name: Initialize Docker Swarm
       community.docker.docker_swarm:
         state: present
@@ -103,12 +125,12 @@
     - name: Create Docker Secrets
       include_tasks: stacks/esm2/secrets/create_secrets.yml
 
-    - name: Generate backend docker-swarm.yml.j2 file (esm2)
+    - name: Generate backend Docker Swarm file (esm2)
       template:
         src: stacks/esm2/backend/docker-swarm.yml.j2
         dest: stacks/esm2/backend/docker-swarm.yml
 
-    - name: Generate frontend docker-swarm.yml.j2 file (esm2)
+    - name: Generate frontend Docker Swarm file (esm2)
       template:
         src: stacks/esm2/frontend/docker-swarm.yml.j2
         dest: stacks/esm2/frontend/docker-swarm.yml
@@ -118,7 +140,7 @@
         name: esm2
         state: present
         compose:
-          - stacks/esm2/backend/docker-swarm.yaml
+          - stacks/esm2/backend/docker-swarm.yml
 
     - name: Deploy the frontend stack (esm2)
       community.docker.docker_stack:
@@ -129,10 +151,10 @@
 
     - name: Deploy the logging stack (monitoring)
       community.docker.docker_stack:
-        name: esm2
+        name: monitoring
         state: present
         compose:
-          - stacks/esm2/logging/docker-swarm.yaml
+          - stacks/esm2/logging/docker-swarm.yml
 
     - name: Verify that the esm2 stack is running
       command: docker stack ps esm2
