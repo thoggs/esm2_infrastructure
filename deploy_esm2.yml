@@ -76,8 +76,20 @@
         compose:
           - stacks/esm2/frontend/docker-swarm.yaml
 
+    - name: Deploy the logging stack (monitoring)
+      community.docker.docker_stack:
+        name: esm2
+        state: present
+        compose:
+          - stacks/esm2/logging/docker-swarm.yaml
+
     - name: Verify that the esm2 stack is running
       command: docker stack ps esm2
+      register: result
+      changed_when: false
+
+    - name: Verify that the monitoring stack is running
+      command: docker stack ps monitoring
       register: result
       changed_when: false
 
