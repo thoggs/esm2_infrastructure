@@ -22,10 +22,11 @@ services:
       retries: 5
 
   backend:
-    image: "{{DOCKER_REGISTRY_URL}}/{{BACK_IMAGE_NAME}}:{{TAG_NAME}}"
+    image: "{{ DOCKER_REGISTRY_URL }}/{{ BACK_IMAGE_NAME }}:{{ TAG_NAME }}"
     environment:
+      KEY_STORE_LOCATION: {{ KEY_STORE_LOCATION }}
       ENABLE_SSL_FILE: /run/secrets/ENABLE_SSL
-      KEY_STORE_LOCATION_FILE: /run/secrets/KEY_STORE_LOCATION
+#      KEY_STORE_LOCATION_FILE: /run/secrets/KEY_STORE_LOCATION
       KEY_STORE_PASSWORD_FILE: /run/secrets/KEY_STORE_PASSWORD
       UPLOAD_BASEPATH_FILE: /run/secrets/UPLOAD_BASEPATH
       UPLOAD_BASEURI_FILE: /run/secrets/UPLOAD_BASEURI
@@ -45,7 +46,7 @@ services:
       - DB_ESM
       - ENABLE_SSL
       - KEY_STORE_PASSWORD
-      - KEY_STORE_LOCATION
+#      - KEY_STORE_LOCATION
       - UPLOAD_BASEPATH
       - UPLOAD_BASEURI
       - FHIR_AUTH_URL
@@ -115,8 +116,8 @@ secrets:
     external: true
   KEY_STORE_PASSWORD:
     external: true
-  KEY_STORE_LOCATION:
-    external: true
+#  KEY_STORE_LOCATION:
+#    external: true
   UPLOAD_BASEPATH:
     external: true
   UPLOAD_BASEURI:

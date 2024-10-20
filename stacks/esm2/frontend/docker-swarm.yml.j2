@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: "{{DOCKER_REGISTRY_URL}}/{{FRONT_IMAGE_NAME}}:{{TAG_NAME}}"
+    image: "{{ DOCKER_REGISTRY_URL }}/{{ FRONT_IMAGE_NAME }}:{{ TAG_NAME }}"
     ports:
       - "8085:80"
     expose:

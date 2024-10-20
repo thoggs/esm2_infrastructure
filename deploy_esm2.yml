@@ -93,13 +93,13 @@
         driver: overlay
         scope: swarm
 
-#    - name: Create Docker network for monitoring_network (if not exists)
-#      community.docker.docker_network:
-#        name: monitoring_network
-#        driver: overlay
-#        state: present
-#        attachable: yes
-#        scope: swarm
+    - name: Create Docker network for monitoring_network (if not exists)
+      community.docker.docker_network:
+        name: logging_network
+        driver: overlay
+        state: present
+        attachable: yes
+        scope: swarm
 
     - name: Ensure Python venv package is installed
       ansible.builtin.apt:
@@ -140,6 +140,7 @@
       community.docker.docker_stack:
         name: esm2
         state: present
+        with_registry_auth: yes
         compose:
           - stacks/esm2/backend/docker-swarm.yml
 
@@ -147,6 +148,7 @@
       community.docker.docker_stack:
         name: esm2
         state: present
+        with_registry_auth: yes
         compose:
           - stacks/esm2/frontend/docker-swarm.yml
 
