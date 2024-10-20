@@ -4,10 +4,10 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: {{ .Env.PROMETHEUS_URL }}
+    url: {{ PROMETHEUS_URL }}
     isDefault: true
 
   - name: Loki
     type: loki
     access: proxy
-    url: {{ .Env.LOKI_URL }}
+    url: {{ LOKI_URL }}
