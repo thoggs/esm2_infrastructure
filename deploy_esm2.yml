@@ -95,10 +95,10 @@
 
     - name: Create Docker network for monitoring (if not exists)
       community.docker.docker_network:
-        name: monitoring
+        name: monitoring_network
         driver: overlay
         state: present
-        attachable: true
+        attachable: yes
         scope: swarm
 
     - name: Ensure Python venv package is installed
