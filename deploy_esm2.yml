@@ -1,0 +1,86 @@
+---
+- hosts: swarm_manager
+  become: yes
+
+  vars_files:
+    - .env
+
+  tasks:
+    - name: Update APT package index
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install dependencies for Docker
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Install jq
+      ansible.builtin.apt:
+        name: jq
+        state: present
+
+    - name: Add Docker GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository based on Ubuntu version
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable"
+        state: present
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Ensure Docker service is started and enabled
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Log in to Azure Container Registry
+      community.docker.docker_login:
+        registry_url: "{{ DOCKER_REGISTRY_URL }}"
+        username: "{{ DOCKER_REGISTRY_USER }}"
+        password: "{{ DOCKER_REGISTRY_PASSWORD }}"
+
+    - name: Initialize Docker Swarm
+      community.docker.docker_swarm:
+        state: present
+        advertise_addr: "{{ ansible_host }}"
+
+    - name: Create Docker Secrets
+      include_tasks: stacks/esm2/secrets/create_secrets.yml
+
+    - name: Deploy the backend stack (esm2)
+      community.docker.docker_stack:
+        name: esm2
+        state: present
+        compose:
+          - stacks/esm2/backend/docker-swarm.yaml
+
+    - name: Deploy the frontend stack (esm2)
+      community.docker.docker_stack:
+        name: esm2
+        state: present
+        compose:
+          - stacks/esm2/frontend/docker-swarm.yaml
+
+    - name: Verify that the esm2 stack is running
+      command: docker stack ps esm2
+      register: result
+      changed_when: false
+
+    - name: Show stack services status
+      debug:
+        var: result.stdout_lines
