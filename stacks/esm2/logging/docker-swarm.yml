@@ -110,8 +110,8 @@ services:
         target: /etc/grafana/provisioning/datasources/datasources.yml
     volumes:
       - grafana_storage:/var/lib/grafana
-      - /home/ehsm2-vm-user/stackmonit/certgen/server.crt:/etc/ssl/certs/server.crt:ro
-      - /home/ehsm2-vm-user/stackmonit/certgen/server.key:/etc/ssl/private/server.key:ro
+#      - /home/ehsm2-vm-user/stackmonit/certgen/server.crt:/etc/ssl/certs/server.crt:ro
+#      - /home/ehsm2-vm-user/stackmonit/certgen/server.key:/etc/ssl/private/server.key:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/GRAFANA_ADMIN_PASSWORD
@@ -186,8 +186,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
-      - /home/ehsm2-vm-user/stackmonit/cert/grafana.local.crt:/etc/ssl/certs/grafana.crt:ro
-      - /home/ehsm2-vm-user/stackmonit/cert/grafana.local.key:/etc/ssl/private/grafana.key:ro
+#      - /home/ehsm2-vm-user/stackmonit/cert/grafana.local.crt:/etc/ssl/certs/grafana.crt:ro
+#      - /home/ehsm2-vm-user/stackmonit/cert/grafana.local.key:/etc/ssl/private/grafana.key:ro
     networks:
       - monitoring_network
     labels:
