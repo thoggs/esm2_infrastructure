@@ -1,68 +1,49 @@
 ---
 - hosts: swarm_manager
   become: yes
+
   vars:
-    ansible_python_interpreter: /opt/esm2_environ/bin/python3
     docker_host: "unix:///var/run/docker.sock"
 
   vars_files:
     - env.yml
 
-  tasks:
+  pre_tasks:
+    - name: Update APT package index
+      ansible.builtin.apt:
+        update_cache: yes
+
     - name: Install Docker Collection (community.docker)
       ansible.builtin.command:
         cmd: ansible-galaxy collection install community.docker --force
 
-    - name: Generate backend Docker Swarm file (esm2)
-      template:
-        src: stacks/esm2/backend/docker-swarm.yml.j2
-        dest: stacks/esm2/backend/docker-swarm.yml
-
-    - name: Generate frontend Docker Swarm file (esm2)
-      template:
-        src: stacks/esm2/frontend/docker-swarm.yml.j2
-        dest: stacks/esm2/frontend/docker-swarm.yml
-
-    - name: Generate Prometheus configuration file
-      template:
-        src: stacks/esm2/logging/prometheus/prometheus.yml.j2
-        dest: stacks/esm2/logging/prometheus/prometheus.yml
-
-    - name: Generate Grafana datasources configuration file
-      template:
-        src: stacks/esm2/logging/grafana/datasources.yml.j2
-        dest: stacks/esm2/logging/grafana/datasources.yml
-
-    - name: Create certs directory
-      ansible.builtin.file:
-        path: ./stacks/esm2/backend/certs
-        state: directory
-        mode: '0755'
-
-    - name: Create storage directory
-      ansible.builtin.file:
-        path: ./stacks/esm2/backend/storage
-        state: directory
-        mode: '0755'
-
-    - name: Create Prometheus data volume
-      community.docker.docker_volume:
-        name: prometheus_data
-        state: present
-
-    - name: Create Grafana storage volume
-      community.docker.docker_volume:
-        name: grafana_storage
-        state: present
-
-    - name: Create Portainer data volume
-      community.docker.docker_volume:
-        name: portainer_data
-        state: present
-
-    - name: Update APT package index
+    - name: Make sure the python3-apt package is installed
       ansible.builtin.apt:
-        update_cache: yes
+        name: python3-apt
+        state: present
+
+    - name: Make sure the python3-venv package is installed
+      ansible.builtin.apt:
+        name: python3-venv
+        state: present
+
+    - name: Make sure the python3-pip package is installed
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+
+    - name: Install Python packages (jsondiff, requests, docker)
+      ansible.builtin.pip:
+        name:
+          - jsondiff
+          - requests
+          - docker
+        state: present
+
+    - name: Remove existing Docker sources (se existirem)
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
+        state: absent
 
     - name: Install dependencies for Docker
       ansible.builtin.apt:
@@ -72,11 +53,6 @@
           - gnupg
           - lsb-release
         state: present
-
-    - name: Remove existing Docker sources (se existirem)
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
-        state: absent
 
     - name: Create the /etc/apt/keyrings directory (if necessary)
       ansible.builtin.file:
@@ -111,35 +87,6 @@
         state: started
         enabled: yes
 
-    - name: Create Docker network for sm_network (if not exists)
-      community.docker.docker_network:
-        name: sm_network
-        state: present
-        driver: overlay
-        scope: swarm
-
-    #    - name: Create Docker network for monitoring_network (if not exists)
-    #      community.docker.docker_network:
-    #        name: monitoring_network
-    #        driver: overlay
-    #        state: present
-    #        attachable: yes
-    #        scope: swarm
-
-    - name: Ensure Python venv package is installed
-      ansible.builtin.apt:
-        name: python3-venv
-        state: present
-
-    - name: Create a virtual environment
-      ansible.builtin.command:
-        cmd: python3 -m venv /opt/esm2_environ
-        creates: /opt/esm2_environ/bin/activate
-
-    - name: Install jsondiff and requests in the virtual environment
-      ansible.builtin.command:
-        cmd: /opt/esm2_environ/bin/pip install jsondiff requests docker
-
     - name: Set environment variable for Docker Host
       ansible.builtin.set_fact:
         DOCKER_HOST: "{{ docker_host }}"
@@ -156,10 +103,73 @@
     - name: Initialize Docker Swarm
       community.docker.docker_swarm:
         state: present
-        advertise_addr: "{{ ansible_host }}"
+        advertise_addr: "{{ HOST_IP }}"
 
     - name: Create Docker Secrets
       include_tasks: stacks/esm2/secrets/create_secrets.yml
+
+    - name: Create Prometheus data volume
+      community.docker.docker_volume:
+        name: prometheus_data
+        state: present
+
+    - name: Create Grafana storage volume
+      community.docker.docker_volume:
+        name: grafana_storage
+        state: present
+
+    - name: Create Portainer data volume
+      community.docker.docker_volume:
+        name: portainer_data
+        state: present
+
+    - name: Create Docker network for sm_network (if not exists)
+      community.docker.docker_network:
+        name: sm_network
+        state: present
+        driver: overlay
+        scope: swarm
+
+    #    - name: Create Docker network for monitoring_network (if not exists)
+    #      community.docker.docker_network:
+    #        name: monitoring_network
+    #        driver: overlay
+    #        state: present
+    #        attachable: yes
+    #        scope: swarm
+
+  tasks:
+    - name: Generate backend Docker Swarm file (esm2)
+      template:
+        src: stacks/esm2/backend/docker-swarm.yml.j2
+        dest: stacks/esm2/backend/docker-swarm.yml
+
+    - name: Generate frontend Docker Swarm file (esm2)
+      template:
+        src: stacks/esm2/frontend/docker-swarm.yml.j2
+        dest: stacks/esm2/frontend/docker-swarm.yml
+
+    - name: Generate Prometheus configuration file
+      template:
+        src: stacks/esm2/logging/prometheus/prometheus.yml.j2
+        dest: stacks/esm2/logging/prometheus/prometheus.yml
+
+    - name: Generate Grafana datasources configuration file
+      template:
+        src: stacks/esm2/logging/grafana/datasources.yml.j2
+        dest: stacks/esm2/logging/grafana/datasources.yml
+
+    - name: Create certs directory
+      ansible.builtin.file:
+        path: ./stacks/esm2/backend/certs
+        state: directory
+        mode: '0755'
+
+    - name: Create storage directory
+      ansible.builtin.file:
+        path: ./stacks/esm2/backend/storage
+        state: directory
+        mode: '0755'
 
     - name: Deploy the backend stack (esm2)
       community.docker.docker_stack:
