@@ -102,7 +102,7 @@ services:
   grafana:
     image: grafana/grafana-enterprise:latest
     ports:
-      - "443:443"
+      - "3000:3000"
     configs:
       - source: grafana_ini
         target: /etc/grafana/grafana.ini
