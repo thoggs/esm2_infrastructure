@@ -92,10 +92,7 @@
         DOCKER_HOST: "{{ docker_host }}"
 
     - name: Add active user to the docker group
-      ansible.builtin.user:
-        name: "{{ HOST_USER }}"
-        groups: docker
-        append: yes
+      ansible.builtin.shell: "usermod -aG docker $USER"
 
     - name: Log in to Azure Container Registry
       community.docker.docker_login:
