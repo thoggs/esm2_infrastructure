@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:16'
     environment:
       POSTGRES_DB_FILE: /run/secrets/POSTGRES_DB
       POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD

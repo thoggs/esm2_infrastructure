@@ -28,15 +28,25 @@
         name: python3-pip
         state: present
 
-    - name: Uninstall Docker packages
-      ansible.builtin.apt:
+    - name: Create a virtual environment for Python
+      ansible.builtin.command:
+        cmd: python3 -m venv /opt/esm2_env
+        creates: /opt/esm2_env/bin/activate
+
+    - name: Install Docker SDK for Python and jsondiff in virtual environment
+      ansible.builtin.pip:
         name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-compose-plugin
-        state: absent
-        purge: yes
+          - docker
+          - jsondiff
+        virtualenv: /opt/esm2_env
+
+    - name: Define Python interpreter
+      set_fact:
+        ansible_python_interpreter: /opt/esm2_env/bin/python
+
+    - name: Purge Docker packages completely
+      ansible.builtin.command:
+        cmd: sudo apt-get purge -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
     - name: Remove Docker's storage directories
       ansible.builtin.command:
