@@ -32,12 +32,14 @@
         name: python3-pip
         state: present
 
-    - name: Install Python packages (jsondiff, requests, docker)
+    - name: Install Python packages (jsondiff, requests, docker, urllib3, chardet)
       ansible.builtin.pip:
         name:
           - jsondiff
-          - requests
+          - requests>=2.25.1
           - docker
+          - urllib3>=1.26.5
+          - chardet>=3.0.4
         state: present
 
     - name: Uninstall Docker packages
