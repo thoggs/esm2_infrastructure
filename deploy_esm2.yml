@@ -199,14 +199,18 @@
 
     - name: Verify that the esm2 stack is running
       command: docker stack ps esm2
-      register: result
+      register: esm2_result
       changed_when: false
 
     - name: Verify that the monitoring stack is running
       command: docker stack ps monitoring
-      register: result
+      register: monitoring_result
       changed_when: false
 
-    - name: Show stack services status
+    - name: Show esm2 stack services status
       debug:
-        var: result.stdout_lines
+        var: esm2_result.stdout_lines
+
+    - name: Show monitoring stack services status
+      debug:
+        var: monitoring_result.stdout_lines
