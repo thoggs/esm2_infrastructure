@@ -40,10 +40,20 @@
           - docker
         state: present
 
-    - name: Remove existing Docker sources (se existirem)
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
+    - name: Uninstall Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
         state: absent
+        purge: yes
+
+    - name: Remove Docker's storage directories
+      ansible.builtin.command:
+        cmd: rm -rf /var/lib/docker /var/lib/containerd
+        warn: false
 
     - name: Install dependencies for Docker
       ansible.builtin.apt:
