@@ -91,6 +91,12 @@
       ansible.builtin.set_fact:
         DOCKER_HOST: "{{ docker_host }}"
 
+    - name: Add active user to the docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
     - name: Log in to Azure Container Registry
       community.docker.docker_login:
         registry_url: "{{ DOCKER_REGISTRY_URL }}"
